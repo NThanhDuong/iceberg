@@ -18,17 +18,17 @@ services:
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
     ports:
-      - 8806:8806
+      - 8888:8888
       - 8080:8080
       - 10000:10000
       - 10001:10001
   rest:
-    image: tabulario/iceberg-rest-duongngt
+    image: tabulario/iceberg-rest
     container_name: iceberg-rest
     networks:
       iceberg_net:
     ports:
-      - 8191:8191
+      - 8181:8181
     environment:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
@@ -48,7 +48,7 @@ services:
         aliases:
           - warehouse.minio
     ports:
-      - 9006:9006
+      - 9001:9001
       - 9000:9000
     command: ["server", "/data", "--console-address", ":9001"]
   mc:
