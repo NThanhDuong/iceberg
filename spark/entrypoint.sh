@@ -1,21 +1,11 @@
 #!/bin/bash
 
-SPARK_WORKLOAD=$1
+start-master.sh -p 7077
+start-worker.sh spark://spark-iceberg:7077
+start-history-server.sh
+start-thriftserver.sh  --driver-java-options "-Dderby.system.home=/tmp/derby"
 
-echo "SPARK_WORKLOAD: $SPARK_WORKLOAD"
-
-if [ "$SPARK_WORKLOAD" == "master" ];
-then
-  start-master.sh -p 7077
-
-  eval notebook
-elif [ "$SPARK_WORKLOAD" == "worker" ];
-then
-  WORKER_PORT=${2:-8081}
-  echo "$WORKER_PORT"
-
-  start-worker.sh spark://spark-iceberg:7077 --webui-port "$WORKER_PORT"
-elif [ "$SPARK_WORKLOAD" == "history" ]
-then
-  start-history-server.sh
+# Entrypoint, for example notebook, pyspark or spark-sql
+if [[ $# -gt 0 ]] ; then
+    eval "$1"
 fi
