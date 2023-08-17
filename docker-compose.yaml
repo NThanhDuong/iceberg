@@ -1,15 +1,59 @@
 version: "3"
 
 services:
+  de_psql:
+    image: postgres:15
+    container_name: de_psql
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_HOST=de_psql
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB= postgres   
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin123
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      iceberg_net:
+
+  # spark-iceberg:
+  #   image: tabulario/spark-iceberg
+  #   container_name: spark-iceberg
+  #   build: 
+  #     context: spark/
+  #     args:
+  #       SPARK_DEFAULTS_CONF: ./spark-defaults-pg-catalog.conf
+  #   networks:
+  #     iceberg_net:
+  #   depends_on:
+  #     - rest
+  #     - minio
+  #     - de_psql
+  #   volumes:
+  #     - ./warehouse:/home/iceberg/warehouse
+  #     - ./notebooks:/home/iceberg/notebooks/notebooks
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=admin
+  #     - AWS_SECRET_ACCESS_KEY=password
+  #     - AWS_REGION=us-east-1
+  #   ports:
+  #     - 8888:8888
+  #     - 8080:8080
+  #     - 10000:10000
+  #     - 10001:10001
   spark-iceberg:
-    image: tabulario/spark-iceberg
-    container_name: spark-iceberg
-    build: spark/
+    build: 
+      context: ./spark
+      args:
+        SPARK_DEFAULTS_CONF: spark-defaults-pg-catalog.conf
     networks:
       iceberg_net:
     depends_on:
       - rest
       - minio
+      - de_psql
     volumes:
       - ./warehouse:/home/iceberg/warehouse
       - ./notebooks:/home/iceberg/notebooks/notebooks
@@ -35,7 +79,7 @@ services:
       - AWS_REGION=us-east-1
       - CATALOG_WAREHOUSE=s3://warehouse/
       - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
-      - CATALOG_S3_ENDPOINT=http://minio:9000
+      - CATALOG_S3_ENDPOINT=http://localhost:9000
   minio:
     image: minio/minio
     container_name: minio
